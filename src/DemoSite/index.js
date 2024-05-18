@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react"
 import Annotator from "../Annotator"
 
-const API = "http://localhost:3000"
+const API = "https://tarot.varyshop.eu"
 async function getImages() {
   try {
     const res = await fetch(`${API}/api/decks/1`, { mode: 'cors', headers: { 'Content-Type': 'application/json' } })
