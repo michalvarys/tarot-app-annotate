@@ -1,18 +1,6 @@
-// @flow
-
-import type {
-  Action,
-  Image,
-  MainLayoutState,
-  Mode,
-  ToolEnum,
-} from "../MainLayout/types"
-import React, { useEffect, useReducer } from "react"
+import React, { useEffect, useMemo, useReducer } from "react"
 import makeImmutable, { without } from "seamless-immutable"
-
-import type { KeypointsDefinition } from "../ImageCanvas/region-tools"
 import MainLayout from "../MainLayout"
-import type { Node } from "react"
 import SettingsProvider from "../SettingsProvider"
 import combineReducers from "./reducers/combine-reducers.js"
 import generalReducer from "./reducers/general-reducer.js"
@@ -21,41 +9,6 @@ import historyHandler from "./reducers/history-handler.js"
 import imageReducer from "./reducers/image-reducer.js"
 import useEventCallback from "use-event-callback"
 import videoReducer from "./reducers/video-reducer.js"
-
-type Props = {
-  taskDescription?: string,
-  allowedArea?: { x: number, y: number, w: number, h: number },
-  regionTagList?: Array<string>,
-  regionClsList?: Array<string>,
-  imageTagList?: Array<string>,
-  imageClsList?: Array<string>,
-  enabledTools?: Array<string>,
-  selectedTool?: String,
-  showTags?: boolean,
-  selectedImage?: string | number,
-  images?: Array<Image>,
-  showPointDistances?: boolean,
-  pointDistancePrecision?: number,
-  RegionEditLabel?: Node,
-  onExit: (MainLayoutState) => any,
-  videoTime?: number,
-  videoSrc?: string,
-  keyframes?: Object,
-  videoName?: string,
-  keypointDefinitions: KeypointsDefinition,
-  fullImageSegmentationMode?: boolean,
-  autoSegmentationOptions?:
-    | {| type: "simple" |}
-    | {| type: "autoseg", maxClusters?: number, slicWeightFactor?: number |},
-  hideHeader?: boolean,
-  hideHeaderText?: boolean,
-  hideNext?: boolean,
-  hidePrev?: boolean,
-  hideClone?: boolean,
-  hideSettings?: boolean,
-  hideFullScreen?: boolean,
-  hideSave?: boolean,
-}
 
 export const Annotator = ({
   images,
@@ -99,7 +52,9 @@ export const Annotator = ({
   hideFullScreen,
   hideSave,
   allowComments,
-}: Props) => {
+  onChange,
+  onImageChange
+}) => {
   if (typeof selectedImage === "string") {
     selectedImage = (images || []).findIndex((img) => img.src === selectedImage)
     if (selectedImage === -1) selectedImage = undefined
@@ -137,19 +92,19 @@ export const Annotator = ({
       allowComments,
       ...(annotationType === "image"
         ? {
-            selectedImage,
-            images,
-            selectedImageFrameTime:
-              images && images.length > 0 ? images[0].frameTime : undefined,
-          }
+          selectedImage,
+          images,
+          selectedImageFrameTime:
+            images && images.length > 0 ? images[0].frameTime : undefined,
+        }
         : {
-            videoSrc,
-            keyframes,
-          }),
+          videoSrc,
+          keyframes,
+        }),
     })
   )
 
-  const dispatch = useEventCallback((action: Action) => {
+  const dispatch = useEventCallback((action) => {
     if (action.type === "HEADER_BUTTON_CLICKED") {
       if (["Exit", "Done", "Save", "Complete"].includes(action.buttonName)) {
         return onExit(without(state, "history"))
@@ -168,6 +123,21 @@ export const Annotator = ({
       cls: cls,
     })
   })
+
+  const currentImage = useMemo(() => state.images.at(state.selectedImage), [state.images, state.selectedImage])
+
+  useEffect(() => {
+    // eslint-disable-next-line no-unused-expressions
+    onChange?.(currentImage)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentImage])
+
+  useEffect(() => {
+    // eslint-disable-next-line no-unused-expressions
+    onImageChange?.(state.selectedImage)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.selectedImage])
+
 
   useEffect(() => {
     if (selectedImage === undefined) return
