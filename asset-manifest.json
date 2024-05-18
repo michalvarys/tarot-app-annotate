@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.css": "/react-image-annotate/static/css/main.c80f9f5f.chunk.css",
+    "main.js": "/react-image-annotate/static/js/main.50ae11d0.chunk.js",
+    "main.js.map": "/react-image-annotate/static/js/main.50ae11d0.chunk.js.map",
+    "runtime-main.js": "/react-image-annotate/static/js/runtime-main.c7c62936.js",
+    "runtime-main.js.map": "/react-image-annotate/static/js/runtime-main.c7c62936.js.map",
+    "static/js/2.9c55cff6.chunk.js": "/react-image-annotate/static/js/2.9c55cff6.chunk.js",
+    "static/js/2.9c55cff6.chunk.js.map": "/react-image-annotate/static/js/2.9c55cff6.chunk.js.map",
+    "index.html": "/react-image-annotate/index.html",
+    "precache-manifest.b796c1d3247371a07cd733d1e7d1c90d.js": "/react-image-annotate/precache-manifest.b796c1d3247371a07cd733d1e7d1c90d.js",
+    "service-worker.js": "/react-image-annotate/service-worker.js",
+    "static/css/main.c80f9f5f.chunk.css.map": "/react-image-annotate/static/css/main.c80f9f5f.chunk.css.map",
+    "static/js/2.9c55cff6.chunk.js.LICENSE.txt": "/react-image-annotate/static/js/2.9c55cff6.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.c7c62936.js",
+    "static/js/2.9c55cff6.chunk.js",
+    "static/css/main.c80f9f5f.chunk.css",
+    "static/js/main.50ae11d0.chunk.js"
+  ]
+}
