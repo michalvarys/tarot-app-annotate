@@ -176,7 +176,7 @@ export const ImageCanvas = ({
     onMouseUp,
   })
 
-  useLayoutEffect(() => changeMat(mat.clone()), [windowSize])
+  useLayoutEffect(() => changeMat(mat.clone()), [changeMat, mat, windowSize])
 
   const innerMousePos = mat.applyToPoint(
     mousePosition.current.x,
@@ -288,10 +288,10 @@ export const ImageCanvas = ({
     !zoomStart || !zoomEnd
       ? null
       : {
-          ...mat.clone().inverse().applyToPoint(zoomStart.x, zoomStart.y),
-          w: (zoomEnd.x - zoomStart.x) / mat.a,
-          h: (zoomEnd.y - zoomStart.y) / mat.d,
-        }
+        ...mat.clone().inverse().applyToPoint(zoomStart.x, zoomStart.y),
+        w: (zoomEnd.x - zoomStart.x) / mat.a,
+        h: (zoomEnd.y - zoomStart.y) / mat.d,
+      }
   if (zoomBox) {
     if (zoomBox.w < 0) {
       zoomBox.x += zoomBox.w
@@ -314,6 +314,23 @@ export const ImageCanvas = ({
     return highlightedRegions[0]
   }, [regions])
 
+  const stylePosition = useMemo(() => {
+    let width = imagePosition.bottomRight.x - imagePosition.topLeft.x
+    let height = imagePosition.bottomRight.y - imagePosition.topLeft.y
+    return {
+      imageRendering: "pixelated",
+      left: imagePosition.topLeft.x,
+      top: imagePosition.topLeft.y,
+      width: isNaN(width) ? 0 : width,
+      height: isNaN(height) ? 0 : height,
+    }
+  }, [
+    imagePosition.topLeft.x,
+    imagePosition.topLeft.y,
+    imagePosition.bottomRight.x,
+    imagePosition.bottomRight.y,
+  ])
+
   return (
     <ThemeProvider theme={theme}>
       <div
@@ -326,14 +343,14 @@ export const ImageCanvas = ({
           cursor: createWithPrimary
             ? "crosshair"
             : dragging
-            ? "grabbing"
-            : dragWithPrimary
-            ? "grab"
-            : zoomWithPrimary
-            ? mat.a < 1
-              ? "zoom-out"
-              : "zoom-in"
-            : undefined,
+              ? "grabbing"
+              : dragWithPrimary
+                ? "grab"
+                : zoomWithPrimary
+                  ? mat.a < 1
+                    ? "zoom-out"
+                    : "zoom-in"
+                  : undefined,
         }}
       >
         {showCrosshairs && (
@@ -346,19 +363,19 @@ export const ImageCanvas = ({
               !modifyingAllowedArea || !allowedArea
                 ? regions
                 : [
-                    {
-                      type: "box",
-                      id: "$$allowed_area",
-                      cls: "allowed_area",
-                      highlighted: true,
-                      x: allowedArea.x,
-                      y: allowedArea.y,
-                      w: allowedArea.w,
-                      h: allowedArea.h,
-                      visible: true,
-                      color: "#ff0",
-                    },
-                  ]
+                  {
+                    type: "box",
+                    id: "$$allowed_area",
+                    cls: "allowed_area",
+                    highlighted: true,
+                    x: allowedArea.x,
+                    y: allowedArea.y,
+                    w: allowedArea.w,
+                    h: allowedArea.h,
+                    visible: true,
+                    color: "#ff0",
+                  },
+                ]
             }
             mouseEvents={mouseEvents}
             projectRegionBox={projectRegionBox}
@@ -441,6 +458,7 @@ export const ImageCanvas = ({
           {...mouseEvents}
         >
           <>
+            <canvas id="magicWandCanvas" style={{ ...stylePosition, position: "absolute", zIndex: 2 }} />
             {fullImageSegmentationMode && (
               <ImageMask
                 hide={!showMask}

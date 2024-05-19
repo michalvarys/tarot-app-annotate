@@ -56,6 +56,7 @@ const Number = styled("div")(({ theme }) => ({
 export const ClassSelectionMenu = ({
   selectedCls,
   regionClsList,
+  regionClsListColors,
   onSelectCls,
 }) => {
   useEffect(() => {
@@ -72,6 +73,7 @@ export const ClassSelectionMenu = ({
     }
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [regionClsList, selectedCls])
 
   return (
@@ -88,7 +90,7 @@ export const ClassSelectionMenu = ({
             onClick={() => onSelectCls(label)}
           >
             <Circle
-              style={{ backgroundColor: colors[index % colors.length] }}
+              style={{ backgroundColor: regionClsListColors[label] || colors[index % colors.length] }}
             />
             <Label className={classnames({ selected: label === selectedCls })}>
               {capitalize(label)}

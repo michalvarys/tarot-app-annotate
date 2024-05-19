@@ -1,12 +1,9 @@
-// @flow
-
-import React, { useRef, memo } from "react"
+import React, { useRef, memo, useState } from "react"
 import Paper from "@mui/material/Paper"
 import { makeStyles } from "@mui/styles"
 import { createTheme, ThemeProvider } from "@mui/material/styles"
 import styles from "./styles"
 import classnames from "classnames"
-import type { Region } from "../ImageCanvas/region-tools.js"
 import IconButton from "@mui/material/IconButton"
 import Button from "@mui/material/Button"
 import TrashIcon from "@mui/icons-material/Delete"
@@ -16,25 +13,10 @@ import Select from "react-select"
 import CreatableSelect from "react-select/creatable"
 
 import { asMutable } from "seamless-immutable"
+import { Input } from "@mui/material"
 
 const theme = createTheme()
 const useStyles = makeStyles((theme) => styles)
-
-type Props = {
-  region: Region,
-  editing?: boolean,
-  allowedClasses?: Array<string>,
-  allowedTags?: Array<string>,
-  cls?: string,
-  tags?: Array<string>,
-  onDelete: (Region) => null,
-  onChange: (Region) => null,
-  onClose: (Region) => null,
-  onOpen: (Region) => null,
-  onRegionClassAdded: () => {},
-  allowComments?: boolean,
-}
-
 export const RegionLabel = ({
   region,
   editing,
@@ -46,9 +28,10 @@ export const RegionLabel = ({
   onOpen,
   onRegionClassAdded,
   allowComments,
-}: Props) => {
+}) => {
   const classes = useStyles()
   const commentInputRef = useRef(null)
+  const [color, setColor] = useState(region.color)
   const onCommentInputClick = (_) => {
     // The TextField wraps the <input> tag with two divs
     const commentInput = commentInputRef.current.children[0].children[0]
@@ -103,7 +86,21 @@ export const RegionLabel = ({
               >
                 {region.type}
               </div>
-              <div style={{ flexGrow: 1 }} />
+
+              <div style={{ display: "flex", flexGrow: 1, justifyContent: "center", alignItems: "center" }}>
+                <input style={{ width: "50%" }} onChange={(e) => setColor(e.target.value)} value={color} type="color" />
+                <IconButton
+                  onClick={() => onChange({ ...region, color })}
+                  tabIndex={-1}
+                  style={{ marginLeft: 4, width: 16, height: 16 }}
+                  size="small"
+                  variant="text"
+                >
+                  <CheckIcon style={{ width: 12, height: 12 }} />
+                </IconButton>
+              </div>
+
+              {/* <div style={{ flexGrow: 1 }} /> */}
               <IconButton
                 onClick={() => onDelete(region)}
                 tabIndex={-1}
@@ -114,7 +111,8 @@ export const RegionLabel = ({
                 <TrashIcon style={{ marginTop: -8, width: 16, height: 16 }} />
               </IconButton>
             </div>
-            {(allowedClasses || []).length > 0 && (
+
+            {allowedClasses && (
               <div style={{ marginTop: 6 }}>
                 <CreatableSelect
                   placeholder="Classification"
@@ -123,7 +121,7 @@ export const RegionLabel = ({
                       onRegionClassAdded(o.value)
                     }
                     return onChange({
-                      ...(region: any),
+                      ...region,
                       cls: o.value,
                     })
                   }}
@@ -136,12 +134,13 @@ export const RegionLabel = ({
                 />
               </div>
             )}
+
             {(allowedTags || []).length > 0 && (
               <div style={{ marginTop: 4 }}>
                 <Select
                   onChange={(newTags) =>
                     onChange({
-                      ...(region: any),
+                      ...region,
                       tags: newTags.map((t) => t.value),
                     })
                   }
@@ -169,10 +168,11 @@ export const RegionLabel = ({
                 onClick={onCommentInputClick}
                 value={region.comment || ""}
                 onChange={(event) =>
-                  onChange({ ...(region: any), comment: event.target.value })
+                  onChange({ ...region, comment: event.target.value })
                 }
               />
             )}
+
             {onClose && (
               <div style={{ marginTop: 4, display: "flex" }}>
                 <div style={{ flexGrow: 1 }} />

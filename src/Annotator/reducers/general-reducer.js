@@ -26,6 +26,32 @@ export default (state: MainLayoutState, action: Action) => {
     action.y = clamp(action.y, aa.y, aa.y + aa.h)
   }
 
+  if (action.type === 'SET_REGION_CLS_LIST' && action.regionClsList) {
+    const newState = {
+      ...state,
+      regionClsList: action.regionClsList,
+    }
+    return newState
+  }
+
+  if (action.type === 'UPDATE_REGION_CLS_LIST') {
+    const currentImage = state.images[action.selectedImage];
+    const regionClsList = [...new Set(currentImage.regions.map(r => r.cls).flat())]
+    if (!regionClsList.length) {
+      // regionClsList.push('Background')
+    }
+    const regionClsListColors = regionClsList.reduce((memo, cls) => {
+      memo[cls] = currentImage.regions.find(r => r.cls === cls).color
+      return memo
+    }, {})
+
+    return {
+      ...state,
+      regionClsList,
+      regionClsListColors
+    }
+  }
+
   if (action.type === "ON_CLS_ADDED" && action.cls && action.cls !== "") {
     const oldRegionClsList = state.regionClsList
     const newState = {
@@ -130,20 +156,33 @@ export default (state: MainLayoutState, action: Action) => {
       const regionIndex = getRegionIndex(action.region)
       if (regionIndex === null) return state
       const oldRegion = activeImage.regions[regionIndex]
+
       if (oldRegion.cls !== action.region.cls) {
         state = saveToHistory(state, "Change Region Classification")
         const clsIndex = state.regionClsList.indexOf(action.region.cls)
         if (clsIndex !== -1) {
           state = setIn(state, ["selectedCls"], action.region.cls)
-          action.region.color = colors[clsIndex % colors.length]
+          if (!action.region.color) {
+            action.region.color = state.regionClsListColors[action.region.cls] || colors[clsIndex % colors.length]
+          }
         }
       }
+
+      if (oldRegion.color !== action.region.color) {
+        state = saveToHistory(state, "Change Region Color")
+        if (state.regionClsListColors[action.region.cls] !== action.region.color) {
+          state = { ...state, regionClsListColors: { ...state.regionClsListColors, [action.region.cls]: action.region.color } }
+        }
+      }
+
       if (!isEqual(oldRegion.tags, action.region.tags)) {
         state = saveToHistory(state, "Change Region Tags")
       }
+
       if (!isEqual(oldRegion.comment, action.region.comment)) {
         state = saveToHistory(state, "Change Region Comment")
       }
+
       return setIn(
         state,
         [...pathToActiveImage, "regions", regionIndex],
@@ -310,15 +349,15 @@ export default (state: MainLayoutState, action: Action) => {
             xFree === 0
               ? ow
               : xFree === -1
-              ? ow + (ox - dx)
-              : Math.max(0, ow + (x - ox - ow))
+                ? ow + (ox - dx)
+                : Math.max(0, ow + (x - ox - ow))
           const dy = yFree === 0 ? oy : yFree === -1 ? Math.min(oy + oh, y) : oy
           const dh =
             yFree === 0
               ? oh
               : yFree === -1
-              ? oh + (oy - dy)
-              : Math.max(0, oh + (y - oy - oh))
+                ? oh + (oy - dy)
+                : Math.max(0, oh + (y - oy - oh))
 
           // determine if we should switch the freedom
           if (dw <= 0.001) {
@@ -636,18 +675,18 @@ export default (state: MainLayoutState, action: Action) => {
           const [[keypointsDefinitionId, { landmarks, connections }]] =
             (Object.entries(state.keypointDefinitions): any)
 
-          newRegion = {
-            type: "keypoints",
-            keypointsDefinitionId,
-            points: getLandmarksWithTransform({
-              landmarks,
-              center: { x, y },
-              scale: 1,
-            }),
-            highlighted: true,
-            editingLabels: false,
-            id: getRandomId(),
-          }
+            newRegion = {
+              type: "keypoints",
+              keypointsDefinitionId,
+              points: getLandmarksWithTransform({
+                landmarks,
+                center: { x, y },
+                scale: 1,
+              }),
+              highlighted: true,
+              editingLabels: false,
+              id: getRandomId(),
+            }
           state = setIn(state, ["mode"], {
             mode: "RESIZE_KEYPOINTS",
             landmarks,

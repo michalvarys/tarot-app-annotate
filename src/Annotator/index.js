@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useReducer } from "react"
+import React, { useEffect, useMemo, useReducer, useState } from "react"
 import makeImmutable, { without } from "seamless-immutable"
 import MainLayout from "../MainLayout"
 import SettingsProvider from "../SettingsProvider"
@@ -53,12 +53,21 @@ export const Annotator = ({
   hideSave,
   allowComments,
   onChange,
-  onImageChange
+  onImageChange,
+  labelImages
 }) => {
   if (typeof selectedImage === "string") {
     selectedImage = (images || []).findIndex((img) => img.src === selectedImage)
     if (selectedImage === -1) selectedImage = undefined
   }
+
+  useEffect(() => {
+    dispatchToReducer({
+      type: "UPDATE_REGION_CLS_LIST",
+      selectedImage,
+    })
+  }, [images, selectedImage])
+
   const annotationType = images ? "image" : "video"
   const [state, dispatchToReducer] = useReducer(
     historyHandler(
@@ -79,8 +88,8 @@ export const Annotator = ({
       mode: null,
       taskDescription,
       showMask: true,
-      labelImages: imageClsList.length > 0 || imageTagList.length > 0,
-      regionClsList,
+      labelImages: labelImages || imageClsList.length > 0 || imageTagList.length > 0,
+      regionClsList: [],
       regionTagList,
       imageClsList,
       imageTagList,
@@ -124,7 +133,11 @@ export const Annotator = ({
     })
   })
 
-  const currentImage = useMemo(() => state.images.at(state.selectedImage), [state.images, state.selectedImage])
+  const stateWithoutHistory = useMemo(() => without(state, "history"), [state])
+  const currentImage = useMemo(
+    () => stateWithoutHistory.images.at(stateWithoutHistory.selectedImage),
+    [stateWithoutHistory.images, stateWithoutHistory.selectedImage]
+  )
 
   useEffect(() => {
     // eslint-disable-next-line no-unused-expressions
@@ -134,10 +147,9 @@ export const Annotator = ({
 
   useEffect(() => {
     // eslint-disable-next-line no-unused-expressions
-    onImageChange?.(state.selectedImage)
+    onImageChange?.(stateWithoutHistory.selectedImage)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.selectedImage])
-
+  }, [stateWithoutHistory.selectedImage])
 
   useEffect(() => {
     if (selectedImage === undefined) return
