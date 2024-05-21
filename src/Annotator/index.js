@@ -135,8 +135,8 @@ export const Annotator = ({
 
   const stateWithoutHistory = useMemo(() => without(state, "history"), [state])
   const currentImage = useMemo(
-    () => stateWithoutHistory.images.at(stateWithoutHistory.selectedImage),
-    [stateWithoutHistory.images, stateWithoutHistory.selectedImage]
+    () => stateWithoutHistory?.images?.[stateWithoutHistory.selectedImage],
+    [stateWithoutHistory?.images, stateWithoutHistory?.selectedImage]
   )
 
   useEffect(() => {

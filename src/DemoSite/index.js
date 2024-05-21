@@ -74,7 +74,7 @@ export default () => {
 
   return (
     <div>
-      <MagicWand image={images.at(selectedImage)} />
+      {/* <MagicWand image={images.at(selectedImage)} /> */}
       <Annotator
         showTags
         allowComments
